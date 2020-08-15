@@ -8,7 +8,7 @@ interface Scopes {
   [url: string]: SpecifierMap;
 }
 
-interface ImportMap {
+export interface ImportMap {
   imports?: SpecifierMap;
   scopes?: Scopes;
 }

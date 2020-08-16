@@ -43,3 +43,15 @@ Deno.test("resolve imports with scopes", () => {
   assertEquals(resolve("b", importMap, "/scope2/scope3/foo.mjs"), "/b-3.mjs");
   assertEquals(resolve("c", importMap, "/scope2/scope3/foo.mjs"), "/c-1.mjs");
 });
+
+Deno.test("resolve url", () => {
+  const importMap = {
+    imports: {
+      "path/": "https://deno.land/std@0.65.0/path/",
+    },
+  };
+  assertEquals(
+    resolve("path/mod.ts", importMap),
+    "https://deno.land/std@0.65.0/path/mod.ts",
+  );
+});

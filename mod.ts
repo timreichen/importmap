@@ -70,7 +70,7 @@ function resolveModuleSpecifier(
   }
   const topLevelImportsMatch = resolveImportMatch(normalizedSpecifier, imports);
   if (topLevelImportsMatch) return topLevelImportsMatch;
-  if (asURL) return asURL;
+  if (asURL) return asURL.toString();
   throw Error(
     `specifier was a bare specifier, but was not remapped to anything by importMap.`,
   );

@@ -1,4 +1,4 @@
-import { posix } from "https://deno.land/std@0.65.0/path/mod.ts";
+import { posix, join, dirname } from "https://deno.land/std@0.65.0/path/mod.ts";
 
 interface SpecifierMap {
   [specifier: string]: string;
@@ -13,19 +13,26 @@ export interface ImportMap {
   scopes?: Scopes;
 }
 
-function createAsURL(specifier: string, baseURL: string) {
-  try {
-    if (
-      specifier.startsWith("/") || specifier.startsWith("./") ||
-      specifier.startsWith("../")
-    ) {
-      return new URL(specifier, baseURL);
-    } else {
-      return new URL(specifier);
+function createAsURL(specifier: string, baseURL?: string): string | null {
+  if (
+    baseURL &&
+    (specifier.startsWith("/") ||
+      specifier.startsWith("./") ||
+      specifier.startsWith("../"))
+  ) {
+    try {
+      return new URL(specifier, baseURL).toString();
+    } catch {
+      return join(dirname(baseURL), specifier);
     }
-  } catch {
-    return null;
+  } else {
+    try {
+      return new URL(specifier).toString();
+    } catch {
+      return specifier;
+    }
   }
+  // return null
 }
 
 function resolveImportMatch(
@@ -42,7 +49,11 @@ function resolveImportMatch(
       specifierKey.endsWith("/") && normalizedSpecifier.startsWith(specifierKey)
     ) {
       const afterPrefix = normalizedSpecifier.slice(specifierKey.length);
-      return posix.join(resolutionResult, afterPrefix);
+      try {
+        return new URL(afterPrefix, resolutionResult).toString();
+      } catch {
+        return posix.join(resolutionResult, afterPrefix);
+      }
     }
   }
   return null;
@@ -51,7 +62,7 @@ function resolveImportMatch(
 function resolveModuleSpecifier(
   specifier: string,
   { imports = {}, scopes = {} }: ImportMap,
-  baseURL: string,
+  baseURL?: string,
 ) {
   const baseURLString = baseURL;
   const asURL = createAsURL(specifier, baseURL);
@@ -59,7 +70,8 @@ function resolveModuleSpecifier(
   for (const [scopePrefix, scopeImports] of Object.entries(scopes)) {
     if (
       scopePrefix === baseURLString ||
-      (scopePrefix.endsWith("/") && baseURLString.startsWith(scopePrefix))
+      (scopePrefix.endsWith("/") && baseURLString &&
+        baseURLString.startsWith(scopePrefix))
     ) {
       const scopeImportsMatch = resolveImportMatch(
         normalizedSpecifier,
@@ -71,6 +83,15 @@ function resolveModuleSpecifier(
   const topLevelImportsMatch = resolveImportMatch(normalizedSpecifier, imports);
   if (topLevelImportsMatch) return topLevelImportsMatch;
   if (asURL) return asURL.toString();
+
+  // console.table({
+  //   specifier,
+  //   baseURL,
+  //   asURL,
+  //   normalizedSpecifier,
+  //   topLevelImportsMatch,
+  // });
+
   throw Error(
     `specifier was a bare specifier, but was not remapped to anything by importMap.`,
   );
@@ -89,7 +110,7 @@ function resolveModuleSpecifier(
 export function resolve(
   specifier: string,
   importMap: ImportMap,
-  baseURL = ".",
+  baseURL?: string,
 ) {
   return resolveModuleSpecifier(specifier, importMap, baseURL);
 }

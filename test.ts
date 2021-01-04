@@ -77,4 +77,14 @@ Deno.test("general URL-like specifier remapping", () => {
     resolve("https://www.unpkg.com/vue/dist/vue.runtime.esm.js", importMap2),
     "/node_modules/vue/dist/vue.runtime.esm.js",
   );
+
+  const importMap3 = {
+    imports: {
+      "/app/helpers.mjs": "/app/helpers/index.mjs",
+    },
+  };
+  assertEquals(
+    resolve("./helpers.mjs", importMap3, "/app/somewhere.mjs"),
+    "/app/helpers/index.mjs",
+  );
 });

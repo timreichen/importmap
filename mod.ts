@@ -1,10 +1,10 @@
-import { posix, join, dirname } from "https://deno.land/std@0.65.0/path/mod.ts";
+import { dirname, join, posix } from "https://deno.land/std@0.83.0/path/mod.ts";
 
-interface SpecifierMap {
+export interface SpecifierMap {
   [specifier: string]: string;
 }
 
-interface Scopes {
+export interface Scopes {
   [url: string]: SpecifierMap;
 }
 
@@ -15,8 +15,7 @@ export interface ImportMap {
 
 function createAsURL(specifier: string, baseURL?: string): string | null {
   if (
-    baseURL &&
-    (specifier.startsWith("/") ||
+    baseURL && (specifier.startsWith("/") ||
       specifier.startsWith("./") ||
       specifier.startsWith("../"))
   ) {
@@ -32,7 +31,6 @@ function createAsURL(specifier: string, baseURL?: string): string | null {
       return specifier;
     }
   }
-  // return null
 }
 
 function resolveImportMatch(
@@ -59,7 +57,17 @@ function resolveImportMatch(
   return null;
 }
 
-function resolveModuleSpecifier(
+/**
+ * resolves specifier with import map.
+ * ```ts
+ * import { resolve } from "https://deno.land/x/importmap/mod.ts"
+ * 
+ * const specifier = "foo/mod.ts"
+ * const importMap = { imports: { "foo/": "bar/" } }
+ * const resolvedSpecifier = resolve(specifier, importMap) // returns "bar/mod.ts"
+ * ```
+ */
+export function resolve(
   specifier: string,
   { imports = {}, scopes = {} }: ImportMap,
   baseURL?: string,
@@ -84,33 +92,7 @@ function resolveModuleSpecifier(
   if (topLevelImportsMatch) return topLevelImportsMatch;
   if (asURL) return asURL.toString();
 
-  // console.table({
-  //   specifier,
-  //   baseURL,
-  //   asURL,
-  //   normalizedSpecifier,
-  //   topLevelImportsMatch,
-  // });
-
   throw Error(
     `specifier was a bare specifier, but was not remapped to anything by importMap.`,
   );
-}
-
-/**
- * resolves specifier with import map.
- * ```ts
- * import { resolve } from "https://deno.land/x/importmap/mod.ts"
- * 
- * const specifier = "foo/mod.ts"
- * const importMap = { imports: { "foo/": "bar/" } }
- * const resolvedSpecifier = resolve(specifier, importMap) // returns "bar/mod.ts"
- * ```
- */
-export function resolve(
-  specifier: string,
-  importMap: ImportMap,
-  baseURL?: string,
-) {
-  return resolveModuleSpecifier(specifier, importMap, baseURL);
 }

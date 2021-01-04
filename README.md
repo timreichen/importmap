@@ -1,6 +1,6 @@
 # ImportMap
 
-Resolve specifiers with import maps.
+Resolve specifiers with [import maps](https://github.com/WICG/import-maps).
 
 ## Examples
 

@@ -1,56 +1,27 @@
 # ImportMap
 
-Resolve specifiers with [import maps](https://github.com/WICG/import-maps).
+Implementation of [import maps](https://github.com/WICG/import-maps).
 
-## Examples
-
-### Imports
-```ts
-import { resolve } from "https://deno.land/x/importmap/mod.ts"
-
-const specifier = "foo/mod.ts"
-const importMap = {
-  imports: {
-    "foo/": "bar/"
-  }
-}
-resolve(specifier, importMap) // returns "bar/mod.ts"
-```
-
-### URLs
-```ts
-import { resolve } from "https://deno.land/x/importmap/mod.ts"
-
-const specifier = "path/mod.ts"
-const importMap = {
-  imports: {
-    "path/": "https://deno.land/std/path/"
-  }
-}
-resolve(specifier, importMap) // returns "https://deno.land/std/path/mod.ts"
-```
-
-### Scopes
+## Example
 
 ```ts
-import { resolve } from "https://deno.land/x/importmap/mod.ts"
+import {
+  resolveImportMap,
+  resolveModuleSpecifier,
+} from "https://deno.land/x/importmap/mod.ts";
 
-const specifier = "path/mod.ts"
- const importMap = {
+const importMap: ImportMap = {
   imports: {
-    "a": "/a-1.ts",
-    "b": "/b-1.ts"
+    "./foo/": "./bar/",
   },
-  scopes: {
-    "/scope2/": {
-      "a": "/a-2.ts"
-    }
-  }
-}
-resolve("a", importMap, "/scope1/foo.ts") // returns "/a-1.ts"
-resolve("b", importMap, "/scope1/foo.ts") // returns "/b-1.ts"
-
-resolve("a", importMap, "/scope2/foo.ts") // returns "/a-2.ts"
-resolve("b", importMap, "/scope2/foo.ts") // returns "/b-1.ts"
+};
+const importMapBaseURL = new URL(import.meta.url);
+const moduleSpecifier = "./foo/test.js";
+const baseURL = new URL(import.meta.url);
+const resolvedImportMap = resolveImportMap(importMap, importMapBaseURL); // { imports: { "file:///project/dir/foo/": "file:///project/dir/bar/" }, scopes: {} }
+const resolvedeModuleSpecifier = resolveModuleSpecifier(
+  moduleSpecifier,
+  resolvedImportMap,
+  baseURL,
+); // file:///project/dir/bar/test.js
 ```
-

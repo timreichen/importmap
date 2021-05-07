@@ -104,6 +104,7 @@ function createTests(name: string, data: TestData) {
   }
 }
 
+// testdata from https://github.com/web-platform-tests/wpt/tree/master/import-maps/data-driven/resources
 const testdataDir = "testdata";
 for await (const { name: fileName } of Deno.readDir(testdataDir)) {
   const file = await Deno.readTextFile(path.join(testdataDir, fileName));

@@ -10,7 +10,7 @@ import {
   SpecifierMap,
 } from "./_util.ts";
 
-export type { ImportMap, Scopes, SpecifierMap } from "./_util.ts";
+export type { ImportMap } from "./_util.ts";
 
 /* https://wicg.github.io/import-maps/#sort-and-normalize-a-specifier-map */
 function sortAndNormalizeSpecifierMap(
